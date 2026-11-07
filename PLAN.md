@@ -77,11 +77,17 @@ Never dropped: M1, M4, M5, M12, M14.
 Oral prep added; single main demo (Streamlit); TSE TE_eff ordering fixed (centre-out only gives the shortest TE); T2w test made PD-independent; Hermitian index map, noise σ and aliasing wording corrected; NRMSE moved to M1; loader moved later; GRE promoted; licensing warning.
 
 ## 7. Working rules (agreed 2026-11-06)
-1. **Commits after every step, made by the student.** The mentor only proposes the commands and the message. Commits stay small. The `Co-Authored-By: Claude` trailer goes only on commits that contain mentor-written code.
+1. **Commits after every step, made by the student.** The mentor only proposes the commands and the message. Commits stay small. No Co-Authored-By trailer: AI assistance is disclosed in the README and in the oral.
 2. **Co-coding**: each milestone leaves one small piece (a function or a test) for the student to write, with a spec and a check.
 3. **No moving on without understanding**: the next step starts only when the student types **"cbon"**.
 4. Repo `kspace-digital-twin`: **private** until after the oral; commit email = GitHub noreply address.
 
 ## 8. Progress log
 - 2026-11-06: interview done, plan approved, env + BrainWeb ready. M0 done (skeleton, .gitignore, git init).
-- 2026-11-06: paused at **M1 "Predict"**: waiting for the student's answer to "single bright centre pixel → what k-space?" (a/b/c).
+- 2026-11-07: M1 steps 1–2 done and pushed: `fft2c` (mentor), `ifft2c` (student; fixed an odd-N shift bug), `dft2_explicit` (matches FFT to ~1e-14), figure `figures/m1_spike_from_stripes.png`.
+  - Concepts already understood: a k-space point is one stripe pattern over the whole image (not a pixel); one slice = one k-space; a sharp pixel = all stripes lining up; centre = contrast, periphery = detail; shifts only reorder; FFT = the same sum, faster.
+  - Teaching notes: explain with everyday analogies + figures (equalizer, hand clap, stripes adding up); student found formulas alone confusing.
+
+## 9. Resume point (for a fresh session)
+**Current:** M1 step 3 — Hermitian symmetry. Goal + Predict already given; **waiting for the student's prediction**: for a magnitude-only image, is |k| at a point vs its mirror through the centre (a) identical, (b) similar, (c) unrelated? + what changes with real phase.
+**Then:** build the Hermitian check (index map `np.roll(np.flip(K), 1, axis=(0, 1))`, relative residual; real image ~1e-16 vs synthetic smooth phase O(1)), then `tests/test_kspace.py` (round trip even+odd N, DFT = FFT, centre pixel → flat k-space, Hermitian), then `metrics.nrmse` + `brain_mask`. Student co-codes one piece. Then M1 "What we learned", commit proposal, wait for "cbon" before M2.
