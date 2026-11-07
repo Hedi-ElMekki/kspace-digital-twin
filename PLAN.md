@@ -6,7 +6,7 @@ Status: **plan approved 2026-11-06**. Resume a session with `claude --continue` 
 
 | # | Topic | Answer |
 |---|---|---|
-| 1 | Time | Build until **Sat 2026-11-07 night** (open-ended today, interruptible) |
+| 1 | Time | Build until **Sun 2026-11-08** (extended 2026-11-07 by the student: quality over speed; oral still Wed 2026-11-11) |
 | 2 | Graded | **Live demo + oral defence** only, on **Wed 2026-11-11**. Notebook = GitHub/LinkedIn portfolio |
 | 3 | Language | French for demo/oral; English for notebook; code always English |
 | 4 | Env | Local `.venv`, Python 3.14.7: numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2, scikit-image 0.26.0, jupyterlab, ipywidgets 8.1.9, streamlit 1.67.0 (smoke-tested OK), pytest, h5py 3.16.0, nibabel 5.4.2, pymupdf 2.1 |
