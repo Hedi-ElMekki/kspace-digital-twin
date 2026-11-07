@@ -44,3 +44,24 @@ def log_mag(kspace):
 
 def ifft2c(kspace):
     return np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(kspace), norm="ortho"))
+
+
+def mirror_k(kspace):
+    """Return K(-k) on the same centred grid.
+
+    For even N, k = 0 sits at index N//2, so index j maps to N - j (mod N):
+    flip gives N - 1 - j, then roll by 1. Index 0 (the Nyquist frequency -N/2)
+    maps to itself: -N/2 and +N/2 are the same frequency on a discrete grid.
+    For odd N the grid is symmetric and a flip alone is enough.
+    """
+    shifts = tuple(1 - n % 2 for n in kspace.shape)
+    return np.roll(np.flip(kspace), shifts, axis=(0, 1))
+
+
+def hermitian_residual(kspace):
+    """Relative mismatch ||K(k) - conj(K(-k))|| / ||K||.
+
+    ~1e-16 for a real image (Hermitian symmetry); O(1) once the image has a
+    spatially varying phase.
+    """
+    return np.linalg.norm(kspace - np.conj(mirror_k(kspace))) / np.linalg.norm(kspace)
