@@ -7,6 +7,8 @@ tissue label per voxel. Axis 0 indexes axial slices.
 import gzip
 
 import numpy as np
+from skimage import io
+from skimage.color import rgb2gray
 from skimage.transform import resize
 
 BRAINWEB_SHAPE = (362, 434, 362)
@@ -54,3 +56,23 @@ def brainweb_slice(volume, z=200, fov_mm=240, n=256):
                              (pad_cols // 2, pad_cols - pad_cols // 2)))
     small = resize(labels, (n, n), order=0, preserve_range=True, anti_aliasing=False)
     return small.astype(np.uint8)
+
+
+def load_image(path, n=256):
+    """Any greyscale or colour image file -> n x n float image in [0, 1].
+
+    The longer side is centre-cropped to make it square. Unlike labels, real
+    brightness values can be averaged, so the resize interpolates (order=1).
+    """
+    image = io.imread(path)
+    if image.ndim == 3:
+        image = rgb2gray(image[..., :3])
+    image = image.astype(float)
+    if image.max() == 0:
+        raise ValueError(f"{path} is all black")
+    image /= image.max()
+    rows, cols = image.shape
+    side = min(rows, cols)
+    top, left = (rows - side) // 2, (cols - side) // 2
+    image = image[top:top + side, left:left + side]
+    return resize(image, (n, n), order=1, anti_aliasing=True)
