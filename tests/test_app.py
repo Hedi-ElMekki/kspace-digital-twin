@@ -14,7 +14,7 @@ def app():
 
 
 def test_app_starts_with_all_tabs(app):
-    assert [t.label for t in app.tabs] == ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Importer"]
+    assert [t.label for t in app.tabs] == ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Artefacts", "Importer"]
 
 
 def test_preset_sets_tr_and_te(app):
@@ -34,4 +34,19 @@ def test_every_control_runs_without_error(app):
         app.select_slider[0].set_value(etl).run()
         assert not app.exception
         app.select_slider[1].set_value(app.select_slider[1].options[-1]).run()
+        assert not app.exception
+
+
+def test_every_artefact_runs(app):
+    for artefact in ["Bruit", "Gibbs (troncature)", "Repliement", "Mouvement"]:
+        app.radio(key="artefact").set_value(artefact).run()
+        assert not app.exception
+        for slider in app.slider:
+            slider.set_value(slider.max).run()
+            assert not app.exception
+        if artefact == "Gibbs (troncature)":
+            app.checkbox(key="hamming").check().run()
+            assert not app.exception
+    for when in ["centre", "outer", "alternate"]:
+        app.radio(key="when").set_value(when).run()
         assert not app.exception

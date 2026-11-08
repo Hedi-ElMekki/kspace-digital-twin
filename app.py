@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+from twin.artifacts import add_noise, hamming, motion, motion_rows, truncate, undersample_ky
 from twin.contrast import TISSUES, param_maps, se_signal
 from twin.experiments import lowpass_mask, split_low_high
 from twin.kspace import fft2c, ifft2c, log_mag
@@ -56,8 +57,8 @@ st.caption("Fantôme BrainWeb (coupe axiale, 256 × 256, champ de vue 240 mm) ·
 
 maps = load_maps()
 labels = load_labels()
-tab_contrast, tab_kspace, tab_order, tab_tse, tab_t2, tab_import = st.tabs(
-    ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Importer"])
+tab_contrast, tab_kspace, tab_order, tab_tse, tab_t2, tab_artefacts, tab_import = st.tabs(
+    ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Artefacts", "Importer"])
 
 with tab_contrast:
     st.subheader("TR et TE choisissent le contraste")
@@ -129,6 +130,40 @@ with tab_t2:
     right.image(to_rgb(np.nan_to_num(t2), "viridis", vmax=220), caption="Carte T2 (0 → 220 ms)", width="stretch")
     st.dataframe(pd.DataFrame([{"Tissu": name, "T2 mesuré (ms)": round(float(np.nanmedian(t2[labels == k])), 1)}
                                for k, name in BRAIN_TISSUES.items()]), hide_index=True)
+
+with tab_artefacts:
+    st.subheader("Les artefacts naissent dans l’espace k")
+    artefact = st.radio("Artefact", ["Bruit", "Gibbs (troncature)", "Repliement", "Mouvement"], horizontal=True,
+                        key="artefact")
+    clean_k = fft2c(reference)
+    if artefact == "Bruit":
+        sigma = st.slider("Écart-type du bruit (par canal)", 0.0, 0.1, 0.02, step=0.005, format="%.3f")
+        kspace = add_noise(clean_k, sigma, rng=0)
+        note = (f"Dans l’air, le module du bruit n’a pas une moyenne nulle : σ·√(π/2) ≈ {sigma * 1.2533:.3f}. "
+                "Le bruit est réparti uniformément sur tout l’espace k ; il domine la périphérie, où le signal est faible.")
+    elif artefact == "Gibbs (troncature)":
+        keep = st.slider("Taille du bloc central gardé (points)", 16, 256, 48, step=8)
+        smooth = st.checkbox("Fenêtre de Hamming (adoucir la coupure)", key="hamming")
+        kspace = hamming(clean_k, keep) if smooth else truncate(clean_k, keep)
+        note = ("Une coupure nette de l’espace k crée des ondulations le long des bords francs (Gibbs). "
+                "La fenêtre de Hamming les supprime presque toutes, au prix d’un léger flou.")
+    elif artefact == "Repliement":
+        factor = st.slider("Facteur de sous-échantillonnage en ky (une ligne sur R)", 1, 4, 2)
+        kspace = undersample_ky(clean_k, factor)
+        note = (f"Une ligne sur {factor} : Δk × {factor}, donc champ de vue ÷ {factor} "
+                f"({240 // factor} mm). La tête ne tient plus et se replie, seulement selon le codage de phase.")
+    else:
+        shift_px = st.slider("Déplacement du patient (pixels, gauche-droite)", 0, 10, 3)
+        when = st.radio("Pendant quelles lignes ?", ["centre", "outer", "alternate"], horizontal=True, key="when",
+                        format_func={"centre": "Lignes centrales (10 %)", "outer": "Lignes périphériques (10 %)",
+                                     "alternate": "Une ligne sur deux (respiration)"}.get)
+        kspace = motion(reference, (0, shift_px), motion_rows(256, when))
+        note = ("Chaque ligne est mesurée à un instant différent : l’incohérence se répartit le long du codage "
+                "de phase (vertical), quelle que soit la direction du mouvement. Au centre : flou et fantômes forts ; "
+                "en périphérie : presque invisible.")
+    image = np.abs(ifft2c(kspace))
+    show_pair(image, kspace, f"Image · NRMSE {nrmse(image, reference):.2f}", "Espace k, log(1 + |k|)")
+    st.caption(note)
 
 with tab_import:
     st.subheader("Image → espace k")
