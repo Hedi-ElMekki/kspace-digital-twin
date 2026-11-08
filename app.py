@@ -1,5 +1,6 @@
 """Streamlit demo of the k-space digital twin. Run: streamlit run app.py"""
 
+from io import BytesIO
 from pathlib import Path
 
 import matplotlib
@@ -10,7 +11,9 @@ import streamlit as st
 from twin.contrast import TISSUES, param_maps, se_signal
 from twin.experiments import lowpass_mask, split_low_high
 from twin.kspace import fft2c, ifft2c, log_mag
+from twin.kspace_io import load_kspace, reconstruct, save_kspace
 from twin.metrics import brain_mask, nrmse
+from twin.phantom import load_image
 from twin.sequences import (
     acquire, multi_echo, scan_time, t2_map, tse_kspace, tse_te_per_row,
 )
@@ -53,8 +56,8 @@ st.caption("Fantôme BrainWeb (coupe axiale, 256 × 256, champ de vue 240 mm) ·
 
 maps = load_maps()
 labels = load_labels()
-tab_contrast, tab_kspace, tab_order, tab_tse, tab_t2 = st.tabs(
-    ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2"])
+tab_contrast, tab_kspace, tab_order, tab_tse, tab_t2, tab_import = st.tabs(
+    ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Importer"])
 
 with tab_contrast:
     st.subheader("TR et TE choisissent le contraste")
@@ -126,3 +129,31 @@ with tab_t2:
     right.image(to_rgb(np.nan_to_num(t2), "viridis", vmax=220), caption="Carte T2 (0 → 220 ms)", width="stretch")
     st.dataframe(pd.DataFrame([{"Tissu": name, "T2 mesuré (ms)": round(float(np.nanmedian(t2[labels == k])), 1)}
                                for k, name in BRAIN_TISSUES.items()]), hide_index=True)
+
+with tab_import:
+    st.subheader("Image → espace k")
+    upload = st.file_uploader("Une image (PNG, JPG) ; sinon le cerveau du jumeau en T1", type=["png", "jpg", "jpeg"])
+    try:
+        source = load_image(upload) if upload else reference
+    except ValueError as error:
+        st.error(str(error))
+        source = reference
+    kspace = fft2c(source)
+    show_pair(np.abs(source), kspace, "Image", "Son espace k, log(1 + |k|)")
+    buffer = BytesIO()
+    save_kspace(buffer, kspace)
+    st.download_button("Télécharger cet espace k (.npy)", buffer.getvalue(), "espace_k.npy")
+
+    st.subheader("Espace k → image")
+    upload_k = st.file_uploader("Un fichier d’espace k centré (.npy, .npz, .h5 fastMRI)", type=["npy", "npz", "h5"])
+    if upload_k:
+        try:
+            kspace = load_kspace(upload_k, name=upload_k.name)
+        except (ValueError, KeyError, OSError) as error:
+            st.error(f"Fichier illisible : {error}")
+        else:
+            coils = 1 if kspace.ndim == 2 else kspace.shape[0]
+            show_pair(reconstruct(kspace), kspace if coils == 1 else kspace[0],
+                      f"Image reconstruite ({coils} antenne{'s' if coils > 1 else ''}"
+                      f"{', racine de la somme des carrés' if coils > 1 else ''})",
+                      f"Espace k {kspace.shape[-2]} × {kspace.shape[-1]}" + (" (antenne 1)" if coils > 1 else ""))
