@@ -101,6 +101,7 @@ Oral prep added; single main demo (Streamlit); TSE TE_eff ordering fixed (centre
 - 2026-11-08: Real data: two M4Raw validation files (subject 2022061203, T1 + T2, 18×4×256×256) extracted from the 3 GB Zenodo zip with HTTP range requests (~25 MB) into `data/m4raw/` (gitignored, CC-BY 4.0). Our RSS matches the dataset's own `reconstruction_rss` to NRMSE 9e-8; real k-space Hermitian residual 1.41 (has phase); 61 zero-filled readout columns. README started with data sources and references.
 - 2026-11-08: M9 done: `twin/artifacts.py` (`add_noise` σ per channel → Rayleigh air mean σ√(π/2), std 0.655σ; `truncate` Gibbs; `hamming`; `undersample_ky` → ½(I + I rolled N/2) exactly for R = 2; `motion` + `motion_rows` centre/outer/alternate, ghosts along axis 0 only). App tab « Artefacts ». 60 tests.
 - 2026-11-08: M8 done: `contrast.ernst_angle` (checked against the numerical maximum of `gre_signal` to 0.01°), app tab « Écho de gradient » (TR/TE/angle, signal-vs-angle curves, Ernst angles, SE/ME/TSE/GRE comparison table). TR 30: Ernst WM 16°, GM 15°, CSF 8°; scan 7.7 s. 65 tests.
+- 2026-11-08: M11 done: `metrics.psnr`, `ssim`, `experiments.radial_profile`; `scripts/validate.py` writes `VALIDATION.md` (17/17 checks pass + ℹ️ measurements: TSE ETL 16 SSIM 0.805; M4Raw energy peak at radius 8, high-k floor ~50× the twin's) and `figures/radial_profile.png`; known-limitations list. 69 tests.
 
 ## 9. Resume point (for a fresh session)
-**Current:** M11 (validation table, incl. M4Raw real-vs-twin), then M13 (notebook + README, AI disclosure).
+**Current:** M13 (notebook + full README, AI-assistance disclosure). Then build is complete → M14 oral prep (FR).
