@@ -80,7 +80,7 @@ Oral prep added; single main demo (Streamlit); TSE TE_eff ordering fixed (centre
 1. **Commits after every step, made by the student.** The mentor only proposes the commands and the message. Commits stay small. No Co-Authored-By trailer: AI assistance is disclosed in the README and in the oral.
 2. **Co-coding**: each milestone leaves one small piece (a function or a test) for the student to write, with a spec and a check.
 3. **No moving on without understanding**: the next step starts only when the student types **"cbon"**.
-4. Repo `kspace-digital-twin`: **private** until after the oral; commit email = GitHub noreply address.
+4. Repo `kspace-digital-twin`: **private** until everything is finished (after the oral), then made **public** as a personal open-source project (MIT license); commit email = GitHub noreply address.
 
 ## 8. Progress log
 - 2026-11-06: interview done, plan approved, env + BrainWeb ready. M0 done (skeleton, .gitignore, git init).
@@ -102,6 +102,7 @@ Oral prep added; single main demo (Streamlit); TSE TE_eff ordering fixed (centre
 - 2026-11-08: M9 done: `twin/artifacts.py` (`add_noise` σ per channel → Rayleigh air mean σ√(π/2), std 0.655σ; `truncate` Gibbs; `hamming`; `undersample_ky` → ½(I + I rolled N/2) exactly for R = 2; `motion` + `motion_rows` centre/outer/alternate, ghosts along axis 0 only). App tab « Artefacts ». 60 tests.
 - 2026-11-08: M8 done: `contrast.ernst_angle` (checked against the numerical maximum of `gre_signal` to 0.01°), app tab « Écho de gradient » (TR/TE/angle, signal-vs-angle curves, Ernst angles, SE/ME/TSE/GRE comparison table). TR 30: Ernst WM 16°, GM 15°, CSF 8°; scan 7.7 s. 65 tests.
 - 2026-11-08: M11 done: `metrics.psnr`, `ssim`, `experiments.radial_profile`; `scripts/validate.py` writes `VALIDATION.md` (17/17 checks pass + ℹ️ measurements: TSE ETL 16 SSIM 0.805; M4Raw energy peak at radius 8, high-k floor ~50× the twin's) and `figures/radial_profile.png`; known-limitations list. 69 tests.
+- 2026-11-08: M13: friendly English README with figures (`scripts/make_figures.py` → `figures/readme_*.png`, app screenshot via headless Chromium), install via `requirements.txt`, project map, validation summary, AI-assistance disclosure (student to review wording + course/degree name), data references. Tour notebook `notebooks/kspace_twin_tour.ipynb` (English, derived data only, ipywidgets cell).
 
 ## 9. Resume point (for a fresh session)
-**Current:** M13 (notebook + full README, AI-assistance disclosure). Then build is complete → M14 oral prep (FR).
+**Current:** build complete once the notebook executes cleanly → M14 oral prep in French (5 money shots, FR glossary, Q&A, 2 timed rehearsals) before Wed 2026-11-11.
