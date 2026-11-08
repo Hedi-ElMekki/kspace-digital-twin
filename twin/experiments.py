@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from twin.kspace import fft2c, ifft2c
+
 
 def grating(n=256, cycles=8, axis=1):
     """n x n image of one stripe pattern: brightness 0.5 + 0.5 cos, between 0 and 1.
@@ -13,3 +15,19 @@ def grating(n=256, cycles=8, axis=1):
     profile = 0.5 + 0.5 * np.cos(2 * np.pi * cycles * position / n)
     image = np.tile(profile, (n, 1))
     return image if axis == 1 else image.T
+
+
+def lowpass_mask(shape, radius):
+    """Boolean disc in centred k-space: True within `radius` grid steps of k = 0."""
+    ky = np.arange(shape[0]) - shape[0] // 2
+    kx = np.arange(shape[1]) - shape[1] // 2
+    return np.hypot(ky[:, None], kx[None, :]) <= radius
+
+
+def split_low_high(image, radius):
+    """Split an image into its low-frequency part (centre of k-space, inside
+    `radius`) and its high-frequency part (everything else). low + high = image.
+    """
+    kspace = fft2c(image)
+    low = lowpass_mask(kspace.shape, radius)
+    return ifft2c(kspace * low), ifft2c(kspace * ~low)
