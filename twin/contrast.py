@@ -52,3 +52,8 @@ def gre_signal(pd, t1, t2s, tr, te, flip_deg):
     a = np.radians(flip_deg)
     e1 = np.exp(-tr / t1)
     return pd * np.sin(a) * (1 - e1) / (1 - np.cos(a) * e1) * np.exp(-te / t2s)
+
+
+def ernst_angle(tr, t1):
+    """Flip angle (degrees) giving the most gradient-echo signal: arccos(e^{-TR/T1})."""
+    return np.degrees(np.arccos(np.exp(-tr / t1)))

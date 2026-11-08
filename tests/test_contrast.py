@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from twin.contrast import TISSUES, gre_signal, param_maps, se_signal
+from twin.contrast import TISSUES, ernst_angle, gre_signal, param_maps, se_signal
 
 
 def se(tissue, tr, te, pd=None):
@@ -43,3 +43,14 @@ def test_param_maps_follow_the_labels():
     labels = np.array([[1, 2], [3, 0]], dtype=np.uint8)
     t1 = param_maps(labels)["t1"]
     np.testing.assert_array_equal(t1, [[3000, 920], [785, np.inf]])
+
+
+@pytest.mark.parametrize("tr, t1", [(10, 785), (30, 920), (100, 3000), (500, 250)])
+def test_ernst_angle_gives_the_most_gre_signal(tr, t1):
+    angles = np.linspace(0.01, 90, 90001)
+    best = angles[np.argmax(gre_signal(1, t1, 50, tr, 5, angles))]
+    assert best == pytest.approx(ernst_angle(tr, t1), abs=0.01)
+
+
+def test_short_tr_needs_a_small_flip_angle():
+    assert ernst_angle(10, 785) < 10 < ernst_angle(500, 785)
