@@ -96,6 +96,7 @@ Oral prep added; single main demo (Streamlit); TSE TE_eff ordering fixed (centre
 - 2026-11-08: M5 done: `sequences.row_order` (linear / centric), `acquire(image, kind, n_rows)`, `scan_time`. T1w brain stopped after 26 rows (13 s): linear NRMSE 0.97 vs centric 0.30; full scan 500 ms × 256 = 128 s. 36 tests.
 - 2026-11-08: M6 done: `sequences.multi_echo`, `t2_map` (log-linear least squares, NaN outside mask, refuses one TE or zero-signal pixels). Noiseless brain, TR 3000, TE 20–160: CSF 200, GM 100, WM 90 ms recovered to ~1e-15. 39 tests. With noise the log fit is biased (revisit in M9).
 - 2026-11-08: M7 done: `sequences.tse_te_per_row` (ETL contiguous bands; centre band = echo round(TE_eff/esp); later echoes below, earlier above, leftovers continue outwards → smooth TE, centric when TE_eff = first echo), `tse_kspace`. First version (closeness ranking) zigzagged TE between neighbouring bands → ringing; replaced. T2w TR 3000/TE_eff 100: SE 768 s, ETL 16 48 s (NRMSE 0.10), ETL 32 24 s (0.11). 43 tests.
+- 2026-11-08: M12 v1 done (built early): `app.py` (French UI, 256×256 — fast enough, no need for 128), tabs Contraste / Espace k / Ordre de remplissage / TSE / Carte T2; ships `data/derived/brainweb_z200_labels_256.npy` made by `scripts/make_derived.py` (cite BrainWeb in README). `tests/test_app.py` drives every control with Streamlit AppTest. Run: `.venv/bin/streamlit run app.py --server.address localhost`. 46 tests.
 
 ## 9. Resume point (for a fresh session)
-**Current:** M12 (Streamlit demo, built early with M1–M7 features), then M9 → M10 → M8/M11 → M13.
+**Current:** M9 (artefacts: noise, Gibbs, aliasing, motion) → add an « Artefacts » tab to the app. Then M10 → M8/M11 → M13.
