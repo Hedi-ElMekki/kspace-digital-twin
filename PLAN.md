@@ -90,6 +90,7 @@ Oral prep added; single main demo (Streamlit); TSE TE_eff ordering fixed (centre
 
 - 2026-11-07 (cont.): M1 step 3 (Hermitian: `mirror_k`, `hermitian_residual`) and step 4 (`tests/test_kspace.py`, 9 passing; student wrote `test_centre_pixel_gives_flat_kspace`) done. Student got lost on the reasoning; made a 17-slide visual study deck (M1 concepts, analogies, figures from our code, FR glossary). Paused step 5 (NRMSE prediction) until the student has read it.
 - 2026-11-08: M1 done: `metrics.nrmse` (optional mask) + `brain_mask` (threshold on |image|), 12 tests passing.
+- 2026-11-08: M2 done: `phantom.load_brainweb`, `brainweb_slice` (pad to FOV 240 mm, nearest-neighbour to 256×256), `BRAINWEB_LABELS` (student identified 0 air, 2 GM, 3 WM; corrected 1 = CSF), `load_image` (centre crop, interpolating resize). Course MRI image extracted to `data/course/mri_axial.png` (gitignored); our high/low/full split reproduces the course figure. 16 tests passing.
 
 ## 9. Resume point (for a fresh session)
-**Current:** M2 (real data), waiting for the student's "cbon" to start. Note: `data/brainweb/subject04_crisp.mnc.gz` is raw uint8 bytes (362×434×362 after gunzip), not MINC: nibabel cannot open it; read it with `np.fromfile(...).reshape(362, 434, 362)`; axis 0 slices are axial.
+**Current:** M3 (course experiments: grating, low/high-pass masks, NRMSE vs radius, Δk = 1/FOV), waiting for the student's "cbon" to start.
