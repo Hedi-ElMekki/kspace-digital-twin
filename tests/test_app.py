@@ -14,7 +14,7 @@ def app():
 
 
 def test_app_starts_with_all_tabs(app):
-    assert [t.label for t in app.tabs] == ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Artefacts", "Importer"]
+    assert [t.label for t in app.tabs] == ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Écho de gradient", "Artefacts", "Importer"]
 
 
 def test_preset_sets_tr_and_te(app):

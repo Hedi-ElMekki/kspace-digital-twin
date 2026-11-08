@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from twin.artifacts import add_noise, hamming, motion, motion_rows, truncate, undersample_ky
-from twin.contrast import TISSUES, param_maps, se_signal
+from twin.contrast import TISSUES, ernst_angle, gre_signal, param_maps, se_signal
 from twin.experiments import lowpass_mask, split_low_high
 from twin.kspace import fft2c, ifft2c, log_mag
 from twin.kspace_io import load_kspace, reconstruct, save_kspace
@@ -57,8 +57,8 @@ st.caption("Fantôme BrainWeb (coupe axiale, 256 × 256, champ de vue 240 mm) ·
 
 maps = load_maps()
 labels = load_labels()
-tab_contrast, tab_kspace, tab_order, tab_tse, tab_t2, tab_artefacts, tab_import = st.tabs(
-    ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Artefacts", "Importer"])
+tab_contrast, tab_kspace, tab_order, tab_tse, tab_t2, tab_gre, tab_artefacts, tab_import = st.tabs(
+    ["Contraste", "Espace k", "Ordre de remplissage", "TSE", "Carte T2", "Écho de gradient", "Artefacts", "Importer"])
 
 with tab_contrast:
     st.subheader("TR et TE choisissent le contraste")
@@ -130,6 +130,38 @@ with tab_t2:
     right.image(to_rgb(np.nan_to_num(t2), "viridis", vmax=220), caption="Carte T2 (0 → 220 ms)", width="stretch")
     st.dataframe(pd.DataFrame([{"Tissu": name, "T2 mesuré (ms)": round(float(np.nanmedian(t2[labels == k])), 1)}
                                for k, name in BRAIN_TISSUES.items()]), hide_index=True)
+
+with tab_gre:
+    st.subheader("Écho de gradient : TR très court, petit angle")
+    c1, c2, c3 = st.columns(3)
+    tr_gre = c1.slider("TR (ms)", 5, 200, 30, key="tr_gre")
+    te_gre = c2.slider("TE (ms)", 2, 30, 5, key="te_gre")
+    flip = c3.slider("Angle de bascule (°)", 1, 90, 15, key="flip")
+    image = gre_signal(maps["pd"], maps["t1"], maps["t2s"], tr_gre, te_gre, flip)
+    angles = np.arange(1, 91)
+    curves = pd.DataFrame({name: gre_signal(TISSUES[en]["pd"], TISSUES[en]["t1"], TISSUES[en]["t2s"], tr_gre, te_gre, angles)
+                           for name, en in [("Substance blanche", "white matter"), ("Substance grise", "grey matter"),
+                                            ("LCR", "CSF")]}, index=pd.Index(angles, name="angle (°)"))
+    left, right = st.columns(2)
+    left.image(to_rgb(image), caption=f"GRE, TR {tr_gre} ms, TE {te_gre} ms, {flip}° · durée {scan_time(tr_gre, 256):.1f} s",
+               width="stretch")
+    right.line_chart(curves, height=320)
+    right.caption("Signal selon l’angle. Angle d’Ernst (maximum) : " + ", ".join(
+        f"{name} {float(ernst_angle(tr_gre, TISSUES[en]['t1'])):.0f}°"
+        for name, en in [("SB", "white matter"), ("SG", "grey matter"), ("LCR", "CSF")]))
+    st.markdown("**Comparaison des séquences (256 lignes de k)**")
+    st.dataframe(pd.DataFrame([
+        {"Séquence": "Écho de spin", "Réglage": "TR 3000, TE 100", "Durée (s)": scan_time(3000, 256),
+         "Contraste": "T1, T2 ou DP selon TR/TE", "Atout / limite": "référence robuste / lent"},
+        {"Séquence": "Multi-écho", "Réglage": "TR 3000, 8 échos", "Durée (s)": scan_time(3000, 256),
+         "Contraste": "plusieurs TE à la fois", "Atout / limite": "carte T2 / même durée"},
+        {"Séquence": "TSE", "Réglage": "TR 3000, ETL 16", "Durée (s)": scan_time(3000, 256 // 16),
+         "Contraste": "fixé par le TE effectif", "Atout / limite": "rapide / léger flou"},
+        {"Séquence": "Écho de gradient", "Réglage": "TR 30, 15°", "Durée (s)": scan_time(30, 256),
+         "Contraste": "T1 ou T2* selon angle/TE", "Atout / limite": "très rapide / sensible aux inhomogénéités (T2*)"},
+    ]), hide_index=True)
+    st.caption("T2* : valeurs provisoires (non issues du cours). Pas d’impulsion de 180° en écho de gradient : "
+               "le déphasage dû aux inhomogénéités n’est pas compensé, d’où T2* < T2.")
 
 with tab_artefacts:
     st.subheader("Les artefacts naissent dans l’espace k")
