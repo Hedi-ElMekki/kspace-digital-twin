@@ -88,6 +88,8 @@ Oral prep added; single main demo (Streamlit); TSE TE_eff ordering fixed (centre
   - Concepts already understood: a k-space point is one stripe pattern over the whole image (not a pixel); one slice = one k-space; a sharp pixel = all stripes lining up; centre = contrast, periphery = detail; shifts only reorder; FFT = the same sum, faster.
   - Teaching notes: explain with everyday analogies + figures (equalizer, hand clap, stripes adding up); student found formulas alone confusing.
 
+- 2026-11-07 (cont.): M1 step 3 (Hermitian: `mirror_k`, `hermitian_residual`) and step 4 (`tests/test_kspace.py`, 9 passing; student wrote `test_centre_pixel_gives_flat_kspace`) done. Student got lost on the reasoning; made a 17-slide visual study deck (M1 concepts, analogies, figures from our code, FR glossary). Paused step 5 (NRMSE prediction) until the student has read it.
+- 2026-11-08: M1 done: `metrics.nrmse` (optional mask) + `brain_mask` (threshold on |image|), 12 tests passing.
+
 ## 9. Resume point (for a fresh session)
-**Current:** M1 step 3 — Hermitian symmetry. Goal + Predict already given; **waiting for the student's prediction**: for a magnitude-only image, is |k| at a point vs its mirror through the centre (a) identical, (b) similar, (c) unrelated? + what changes with real phase.
-**Then:** build the Hermitian check (index map `np.roll(np.flip(K), 1, axis=(0, 1))`, relative residual; real image ~1e-16 vs synthetic smooth phase O(1)), then `tests/test_kspace.py` (round trip even+odd N, DFT = FFT, centre pixel → flat k-space, Hermitian), then `metrics.nrmse` + `brain_mask`. Student co-codes one piece. Then M1 "What we learned", commit proposal, wait for "cbon" before M2.
+**Current:** M2 (real data), waiting for the student's "cbon" to start. Note: `data/brainweb/subject04_crisp.mnc.gz` is raw uint8 bytes (362×434×362 after gunzip), not MINC: nibabel cannot open it; read it with `np.fromfile(...).reshape(362, 434, 362)`; axis 0 slices are axial.
