@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from twin.experiments import grating, k_axis, split_low_high
+from twin.experiments import grating, k_axis, radial_profile, split_low_high
 from twin.metrics import nrmse
 from twin.kspace import fft2c
 
@@ -39,3 +39,8 @@ def test_grating_dot_sits_at_cycles_over_fov():
     K = np.abs(fft2c(grating(n=256, cycles=8)))
     k = k_axis(256, fov_mm=240)
     assert k[np.argmax(K[128, 129:]) + 129] == pytest.approx(8 / 240)
+
+
+def test_radial_profile_puts_a_grating_at_its_cycle_count():
+    profile = radial_profile(fft2c(grating(n=64, cycles=5) - 0.5))
+    assert np.argmax(profile) == 5

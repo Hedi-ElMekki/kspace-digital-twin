@@ -40,3 +40,12 @@ def k_axis(n, fov_mm):
     one cycle across the field of view. The edge reaches 1 / (2 * pixel size).
     """
     return (np.arange(n) - n // 2) / fov_mm
+
+
+def radial_profile(kspace):
+    """Mean energy |k|^2 on rings of integer radius around k = 0 (index = radius)."""
+    ky = np.arange(kspace.shape[0]) - kspace.shape[0] // 2
+    kx = np.arange(kspace.shape[1]) - kspace.shape[1] // 2
+    radius = np.rint(np.hypot(ky[:, None], kx[None, :])).astype(int)
+    energy = np.bincount(radius.ravel(), weights=np.abs(kspace.ravel()) ** 2)
+    return energy / np.bincount(radius.ravel())
