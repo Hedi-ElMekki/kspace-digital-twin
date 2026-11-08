@@ -5,3 +5,4 @@ __pycache__/
 data/brainweb/*.mnc.gz
 *.pdf
 data/course/
+data/m4raw/
