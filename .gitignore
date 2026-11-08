@@ -4,3 +4,4 @@ __pycache__/
 # licensing: keep raw data and course material out of the public repo
 data/brainweb/*.mnc.gz
 *.pdf
+data/course/
