@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from twin.experiments import grating, split_low_high
+from twin.experiments import grating, k_axis, split_low_high
 from twin.metrics import nrmse
 from twin.kspace import fft2c
 
@@ -26,3 +26,16 @@ def test_keeping_more_of_the_centre_lowers_the_error():
     errors = [nrmse(split_low_high(image, r)[0], image) for r in range(0, 26, 2)]
     assert all(later < earlier for earlier, later in zip(errors, errors[1:]))
     assert errors[-1] == pytest.approx(0, abs=1e-12)  # radius 24 > corner distance 22.6: all of k-space
+
+
+def test_k_axis_spacing_is_one_over_fov():
+    k = k_axis(256, fov_mm=240)
+    np.testing.assert_allclose(np.diff(k), 1 / 240)
+    pixel_mm = 240 / 256
+    assert -k[0] == pytest.approx(1 / (2 * pixel_mm))  # edge of k-space = finest stripe
+
+
+def test_grating_dot_sits_at_cycles_over_fov():
+    K = np.abs(fft2c(grating(n=256, cycles=8)))
+    k = k_axis(256, fov_mm=240)
+    assert k[np.argmax(K[128, 129:]) + 129] == pytest.approx(8 / 240)

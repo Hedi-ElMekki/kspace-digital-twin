@@ -31,3 +31,12 @@ def split_low_high(image, radius):
     kspace = fft2c(image)
     low = lowpass_mask(kspace.shape, radius)
     return ifft2c(kspace * low), ifft2c(kspace * ~low)
+
+
+def k_axis(n, fov_mm):
+    """k value of each index along one centred k-space axis, in cycles per mm.
+
+    Grid spacing dk = 1 / FOV: the slowest stripe that is not flat makes exactly
+    one cycle across the field of view. The edge reaches 1 / (2 * pixel size).
+    """
+    return (np.arange(n) - n // 2) / fov_mm
